@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log reader</title>
+</head>
+<body>
+    <h1>Log Reader</h1>
+    <h2>You can read logs from text files here directly from websites itself.</h2>
+    <div id='logs'></div>
+
+    <script>
+        const ws = new WebSocket(`ws://localhost:8000/ws/log-reader`);
+        ws.onmessage = function(event) {
+            const output_div = document.getElementById("logs");
+            console.log("received logs: ", event.data)
+            output_div.innerHTML = `<p>${event.data}</p>`
+        }
+        ws.onopen = function() {
+            console.log("WebSocket connection established");
+        };
+
+        ws.onerror = function(error) {
+            console.error("WebSocket error:", error);
+        };
+
+        ws.onclose = function() {
+            console.log("WebSocket connection closed");
+        };
+    </script>
+</body>
+</html>

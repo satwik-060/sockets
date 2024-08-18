@@ -15,7 +15,7 @@
 
     <script>
         const userid = prompt("Enter your user ID");
-        const ws = new WebSocket(`ws://localhost:8000/ws/${userid}`);
+        const ws = new WebSocket(`ws://localhost:8000/ws/chat-app/${userid}`);
         ws.onmessage = function(event) {
             const output_div = document.getElementById("output");
             console.log("this is the data", event.data)

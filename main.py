@@ -1,12 +1,15 @@
 import uvicorn 
 import asyncio 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import websockets 
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from typing import List
 
+from helper import log_reader_helper
 app = FastAPI()
 
 app.add_middleware(
@@ -26,8 +29,8 @@ def test():
 
 connected_users = {}
 
-@app.websocket("/ws/{user_id}")
-async def websocket_endpoint(user_id: str, websocket: WebSocket):
+@app.websocket("/ws/chat-app/{user_id}")
+async def chat_app(user_id: str, websocket: WebSocket):
     await websocket.accept() 
     connected_users[user_id] = websocket  
     
@@ -42,14 +45,19 @@ async def websocket_endpoint(user_id: str, websocket: WebSocket):
         del connected_users[user_id]
         await websocket.close()
         
-@app.websocket("ws/log-reader")
+@app.websocket("/ws/log-reader")
 async def log_reader(websocket: WebSocket):
     await websocket.accept() 
     try:
         while True:
-            asyncio.sleep(1)
-            data = None 
+            await asyncio.sleep(1)
+            data = log_reader_helper('test.log')
+            print(data)
             await websocket.send_text(data)
+    except WebSocketDisconnect:
+        print("web socket disonnected")
+    except websockets.exceptions.ConnectionClosedError:
+        print("connection closed abruptly")
     except Exception as exc:
         print("Error in log reading", exc)
         await websocket.close()
